@@ -1,0 +1,185 @@
+#: kivy 1.11.1
+#:import FadeTransition kivy.uix.screenmanager.FadeTransition
+#:import os os
+
+<Phone>:
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'top'
+        WindowManager:
+            id: _screen_manager
+            size_hint: 1, 0.9
+            transition: FadeTransition()
+            HomeWindow:
+                name: 'home'
+                id: home_window
+            SearchWindow:
+                name: 'search'
+                id: search_window
+            StorageWindow:
+                name: 'storage'
+                id: storage_window
+            SettingsWindow:
+                name: 'settings'
+                id: settings_window
+            DisplayMangaWindow:
+                name: 'displaymanga'
+                id: display_manga
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'bottom'
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 1
+            Line:
+                points: 0, self.height/10, self.width, self.height/10
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: 1, 0.1
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            Button:
+                text: 'HOME'
+                on_press: root.ids._screen_manager.current = 'home'
+                on_release: root.ids.home_window.track_on()
+            Button:
+                text: 'SEARCH'
+                on_press: root.ids._screen_manager.current = 'search'
+                on_release: root.ids.search_window.track_on()
+            Button:
+                text: 'STORAGE'
+                on_press: root.ids._screen_manager.current = 'storage'
+                on_release: root.ids.storage_window.track_on()
+            Button:
+                text: 'SETTINGS'
+                on_press: root.ids._screen_manager.current = 'settings'
+                on_release: root.ids.settings_window.track_on()
+
+<add_view>:
+    size_hint: 0.4, 0.2
+    orientation: 'vertical'
+    arrow_pos: 'left_mid'
+    BubbleButton:
+        text: 'Add Favorite'
+        id: add_search
+    BubbleButton:
+        text: 'View'
+        id: view_search
+
+<view_delete>:
+    size_hint: 0.4, 0.2
+    orientation: 'vertical'
+    arrow_pos: 'left_mid'
+    BubbleButton:
+        text: 'View'
+        id: view_storage
+    BubbleButton:
+        text: 'Delete'
+        id: delete_storage
+
+<ImageButton>:
+    size_hint_y: 0.8
+    pos_hint: {'center_y':0.5}
+
+<FloatLayout>:
+    canvas.before:
+        Color:
+            rgba: 228/255.0, 241.0/255.0, 254.0/255.0, 1
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<HomeWindow>:
+    FloatLayout:
+        Button:
+            text: "Check Updates"
+            font_size: 0.12*self.width if self.width*0.12 < self.height else self.height*0.7
+            valign: 'center'
+            halign: 'center'
+            size_hint: 0.5, 0.1
+            pos_hint: {'center_x':0.5}
+            on_release: root.check_update()
+        ScrollView:
+            size_hint: 0.9, 0.88
+            pos_hint: {'center_x':0.5, 'top':0.98}
+            GridLayout:
+                id: home_grid
+                cols: 2
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: root.width*0.05, root.height*0.05
+
+<SearchWindow>:
+    FloatLayout:
+        TextInput:
+            id: search_input
+            font_size: self.height - self.height*0.5
+            size_hint: 0.7, 0.09
+            pos_hint: {'x':0.05, 'top':0.98}
+            multiline: False
+        Button:
+            text: 'FIND'
+            size_hint: 0.18, 0.09
+            pos_hint: {'x':0.75, 'top':0.98}
+            on_release: root.search()
+        ScrollView:
+            size_hint: 0.9, 0.88
+            pos_hint:  {'center_x':0.5,'top':0.88}
+            GridLayout:
+                id: search_grid
+                cols: 2
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: root.width*0.05, root.height*0.05
+
+<StorageWindow>:
+    FloatLayout
+        canvas:
+            Color:
+                rgba: 0, 0, 0, 1
+            Line:
+                points: 0, self.height*0.90, self.width, self.height*0.90
+        Label:
+            text: "Favorite Manga"
+            halign: 'center'
+            valign: 'middle'
+            font_size: self.width*0.1 if self.width*0.1 < self.height else self.height*0.7
+            color: 0, 0, 0, 1
+            size_hint: 1, 0.08
+            pos_hint: {'x':0, 'top':0.98}
+        ScrollView:
+            size_hint: 0.9, 0.90
+            pos_hint: {'center_x': 0.5,'top': 0.90}
+            GridLayout:
+                id: storage_grid
+                cols: 2
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: root.width*0.05, root.height*0.05
+
+<DisplayMangaWindow>:
+    FloatLayout:
+        ScrollView:
+            size_hint: 0.9, 0.96
+            pos_hint: {'center_x': 0.5,'top': 0.98}
+            id: display_scroll
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: root.height*0.05
+                GridLayout:
+                    cols: 2
+                    size_hint_y: None
+                    height: self.minimum_height
+                    id: display_grid
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    id: display_box
+                    spacing: root.height*0.05
