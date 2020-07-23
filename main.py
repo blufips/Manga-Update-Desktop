@@ -14,7 +14,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.bubble import Bubble
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
-from kivy.clock import Clock
+from kivy.clock import Clock, mainthread
 from kivy.core.window import Window
 from kivy.utils import platform
 
@@ -31,6 +31,7 @@ manga_list = database.TextFile('manganelo', imagemanga)
 manga_scrap = scrapper.ManganeloScrap()
 
 Window.size = (400, 700)
+
 
 class screen_tracker:
     """Class to track the screen.
@@ -68,18 +69,33 @@ class ImageButton(ButtonBehavior, AsyncImage):
     pass
 
 
+class PopupLoading(Popup):
+    """Class to create POPUP window for loading screen"""
+    def __init__(self, **kwargs):
+        super(PopupLoading, self).__init__(**kwargs)
+        show_layout = FloatLayout()
+        loading_path = os.path.join('icon', 'loading.zip')
+        loading_label = Label(text='Please Wait', text_size=(Window.width*0.5,None), size_hint=(1,0.2), pos_hint={'x':0, 'top':0.7}, halign='center', color=(0,0,0,1))
+        loading_img = Image(source=loading_path, size_hint=(0.1,0.1), pos_hint={'center_x': 0.5, 'top':0.5})
+        show_layout.add_widget(loading_label)
+        show_layout.add_widget(loading_img)
+        self.title = 'Loading Screen'
+        self.content = show_layout
+
+
 class HomeWindow(Screen):
     """Class for Home Screen it has update button to check all the update of manga"""
     def __init__(self, **kwargs):
         super(HomeWindow, self).__init__(**kwargs)
         self.app = App.get_running_app()
+        self.my_popup = PopupLoading()
 
     def check_update(self):
         """Method to check all the update manga"""
         self.ids.home_grid.clear_widgets()
         if manga_list.list_manga(): # Check if manga storage is empty
             threading.Thread(target=self.manga_thread).start()
-            Clock.schedule_once(self.show_popup_loading)
+            self.my_popup.open()
 
     def manga_thread(self):
         """Method for threading"""
@@ -88,16 +104,6 @@ class HomeWindow(Screen):
             self.app.phone.show_manga_list('home_window', 'home_grid', manga, rows=4)
         self.my_popup.dismiss()
 
-    def show_popup_loading(self, *args):
-        """Method to create POPUP window for loading screen"""
-        self.show_layout = FloatLayout()
-        loading_path = os.path.join('icon', 'loading.zip')
-        self.loading_label = Label(text='Please Wait', text_size=(Window.width*0.5,None), size_hint=(1,0.2), pos_hint={'x':0, 'top':0.7}, halign='center', color=(0,0,0,1))
-        self.loading_img = Image(source=loading_path, size_hint=(0.1,0.1), pos_hint={'center_x': 0.5, 'top':0.5})
-        self.show_layout.add_widget(self.loading_label)
-        self.show_layout.add_widget(self.loading_img)
-        self.my_popup = Popup(title='Loading Screen', content=self.show_layout)
-        self.my_popup.open()
 
     def track_on(self, *args):
         """Method to add home screen to screen_track"""
@@ -168,19 +174,18 @@ class DisplayMangaWindow(Screen):
         self.ids['display_grid'].add_widget(my_grid1)
         for chapters in chapter_list:
             chapter = chapters[0].strip()
-            chapter_edit = chapter[:30]
+            chapter_edit = chapter[:20]
             link = chapters[1]
             date = chapters[2]
-            if len(chapter_edit) == 30:
+            if len(chapter_edit) == 20:
                 text = chapter_edit + '...' + ' '*10 + date
             else:
-                text = chapter_edit + ' '*(45-len(chapter_edit)) + ' '*10 + date
+                text = chapter_edit + ' '*(30-len(chapter_edit)) + ' '*10 + date
             my_button = Button(text=text, size_hint_y=None, height=Window.height*0.1)
             my_button.bind(on_release=partial(self.open_browser, link))
             self.ids['display_box'].add_widget(my_button)
 
     def open_browser(self, link, *args):
-        screen_track.add_track('displaymanga')
         webbrowser.open(link)
 
 
@@ -271,6 +276,7 @@ class Phone(FloatLayout):
             self.ids['storage_window'].remove_widget(self.bubb_viewdelete)
         self.ids['_screen_manager'].current = 'displaymanga'
         self.ids['display_manga'].manga_view(link, img_source)
+        screen_track.add_track('displaymanga')
 
     def search_add_manga(self, manga, *args):
         self.ids['search_window'].remove_widget(self.bubb_addview)
