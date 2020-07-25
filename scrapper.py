@@ -227,20 +227,20 @@ class MangaowlScrap(UserAgentAddImage):
 
 
 if __name__ == '__main__':
-    manga = ManganeloScrap()
+    # manga = ManganeloScrap()
     # for i in manga.search('one piece'):
     #     print(i)
     # print(manga.user_agents())
     # manga.test_request()
     # print(manga.manganelo_chapters('https://manganelo.com/manga/ilsi12001567132882'))
-    for _ in manga.chapters('https://manganelo.com/manga/ilsi12001567132882'):
-        print(_)
+    # for _ in manga.chapters('https://manganelo.com/manga/ilsi12001567132882'):
+    #     print(_)
     # print(manga.update())
     # manga.add_image('berserk', 'http://i998.imggur.net/one-piece/983/one-piece-13676137.jpg', temp=True)
     # manga.manganelo_chapter_view('https://manganelo.com/chapter/ilsi12001567132882/chapter_360')
 
-    # manga = MangaowlScrap()
+    manga = MangaowlScrap()
     # for i in manga.search('berserk'):
     #     print(i)
-    # manga.chapters('https://mangaowl.net/single/51/berserk')
+    manga.chapters('https://mangaowl.net/single/51/berserk')
     # print(manga.update())

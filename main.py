@@ -19,6 +19,7 @@ from kivy.core.window import Window
 from kivy.utils import platform
 
 from functools import partial
+from settingsjson import settings_json
 import threading
 import os
 import webbrowser
@@ -26,15 +27,11 @@ import database
 import scrapper
 
 
-imagemanga = os.path.join('imagemanga', 'manganelo')
-manga_list = database.TextFile('manganelo', imagemanga)
-manga_scrap = scrapper.ManganeloScrap()
-
 Window.size = (400, 700)
 
 
 class screen_tracker:
-    """Class to track the screen.
+    """Class to track the screen for back click or escape.
         It Create a list of screen name"""
     def __init__(self):
         self.list_of_prev_screen = ['home']
@@ -75,8 +72,8 @@ class PopupLoading(Popup):
         super(PopupLoading, self).__init__(**kwargs)
         show_layout = FloatLayout()
         loading_path = os.path.join('icon', 'loading.zip')
-        loading_label = Label(text='Please Wait', text_size=(Window.width*0.5,None), size_hint=(1,0.2), pos_hint={'x':0, 'top':0.7}, halign='center', color=(0,0,0,1))
-        loading_img = Image(source=loading_path, size_hint=(0.1,0.1), pos_hint={'center_x': 0.5, 'top':0.5})
+        loading_label = Label(text='Please Wait\nGetting your Favorite\nManga', text_size=(Window.width*0.5,None), size_hint=(1,0.2), pos_hint={'x':0, 'top':0.7}, halign='center')
+        loading_img = Image(source=loading_path, size_hint=(0.4,0.4), pos_hint={'center_x': 0.5, 'top':0.5})
         show_layout.add_widget(loading_label)
         show_layout.add_widget(loading_img)
         self.title = 'Loading Screen'
@@ -93,15 +90,15 @@ class HomeWindow(Screen):
     def check_update(self):
         """Method to check all the update manga"""
         self.ids.home_grid.clear_widgets()
-        if manga_list.list_manga(): # Check if manga storage is empty
+        if self.app.phone.manga_list.list_manga(): # Check if manga storage is empty
             threading.Thread(target=self.manga_thread).start()
             self.my_popup.open()
 
     def manga_thread(self):
         """Method for threading"""
-        self.list_manga = manga_scrap.update()
+        self.list_manga = self.app.phone.manga_scrap.update()
         for manga in self.list_manga:
-            self.app.phone.show_manga_list('home_window', 'home_grid', manga, rows=4)
+            self.app.phone.show_manga_list('home_window', 'home_grid', manga, self.app.phone.imagemanga, rows=4)
         self.my_popup.dismiss()
 
 
@@ -123,9 +120,9 @@ class SearchWindow(Screen):
 
     def manga_thread(self):
         """Method for threading"""
-        self.list_manga = manga_scrap.search(self.search_input)
+        self.list_manga = self.app.phone.manga_scrap.search(self.search_input)
         for manga in self.list_manga:
-            self.app.phone.show_manga_list('search_window', 'search_grid', manga, rows=4, imgfolder='imagetemp')
+            self.app.phone.show_manga_list('search_window', 'search_grid', manga, 'imagetemp', rows=4)
 
     def track_on(self, *args):
         """Method to add search screen to screen_track"""
@@ -141,24 +138,24 @@ class StorageWindow(Screen):
     def callback(self, *args):
         """Method to callback at first instant of the App to load the list of manga"""
         self.ids.storage_grid.clear_widgets()
-        self.list_manga = manga_list.list_manga()
+        self.list_manga = self.app.phone.manga_list.list_manga()
         for manga in self.list_manga:
-            self.app.phone.show_manga_list('storage_window','storage_grid', manga)
+            self.app.phone.show_manga_list('storage_window','storage_grid', manga, self.app.phone.imagemanga)
 
     def track_on(self, *args):
         """Method to add storage screen to screen_track"""
         screen_track.add_track('storage')
 
 
-class SettingsWindow(Screen):
-    pass
-
-
 class DisplayMangaWindow(Screen):
+    def __init__(self, **kwargs):
+        super(DisplayMangaWindow, self).__init__(**kwargs)
+        self.app = App.get_running_app()
+
     def manga_view(self, link, img_source):
         self.ids['display_grid'].clear_widgets()
         self.ids['display_box'].clear_widgets()
-        self.my_manga = manga_scrap.chapters(link)
+        self.my_manga = self.app.phone.manga_scrap.chapters(link)
         title = self.my_manga[0][:25]
         author = self.my_manga[3]
         rate = self.my_manga[4]
@@ -167,10 +164,10 @@ class DisplayMangaWindow(Screen):
         my_img = Image(source=img_source, size_hint_y=None, allow_stretch=True, keep_ratio=True, height=Window.height*0.3)
         self.ids['display_grid'].add_widget(my_img)
         my_grid1 = GridLayout(cols=1)
-        my_grid1.add_widget(WrappedLabel(text='[b]'+title+'[/b]', font_size=20, color=(0,0,0,1), markup=True))
-        my_grid1.add_widget(WrappedLabel(text=author, font_size=15, color=(0,0,0,1)))
-        my_grid1.add_widget(WrappedLabel(text='Rate: '+rate, font_size=15, color=(0,0,0,1)))
-        my_grid1.add_widget(WrappedLabel(text='Updated: '+updated, font_size=15, color=(0,0,0,1)))
+        my_grid1.add_widget(WrappedLabel(text='[b]'+title+'[/b]', font_size='20dp', color=(0,0,0,1), markup=True))
+        my_grid1.add_widget(WrappedLabel(text=author, font_size='15dp', color=(0,0,0,1)))
+        my_grid1.add_widget(WrappedLabel(text='Rate: '+rate, font_size='15dp', color=(0,0,0,1)))
+        my_grid1.add_widget(WrappedLabel(text='Updated: '+updated, font_size='15dp', color=(0,0,0,1)))
         self.ids['display_grid'].add_widget(my_grid1)
         for chapters in chapter_list:
             chapter = chapters[0].strip()
@@ -211,12 +208,16 @@ class WindowManager(ScreenManager):
         return False
 
 class Phone(FloatLayout):
+
+    stop = threading.Event()
+
     def __init__(self, **kwargs):
         super(Phone, self).__init__(**kwargs)
+        self.app = App.get_running_app()
         self.bubb_addview = None
         self.bubb_viewdelete = None
 
-    def show_manga_list(self, id_window, id_grid, manga, rows=3, imgfolder=imagemanga):
+    def show_manga_list(self, id_window, id_grid, manga, imgfolder, rows=3):
         """Method to call to display list of manga with Image and Info"""
         title = manga[0][:25]
         link = manga[1]
@@ -234,12 +235,12 @@ class Phone(FloatLayout):
             my_img.bind(on_release=partial(self.switch_display, link, img_source))
         self.ids[id_window].ids[id_grid].add_widget(my_img)
         my_grid = GridLayout(rows=rows)
-        my_grid.add_widget(WrappedLabel(text='[b]'+title+'[/b]', font_size=20, color=(0,0,0,1), markup=True))
-        my_grid.add_widget(WrappedLabel(text=author, font_size=15, color=(0,0,0,1)))
-        my_grid.add_widget(WrappedLabel(text='Rate: '+rate, font_size=15, color=(0,0,0,1)))
+        my_grid.add_widget(WrappedLabel(text='[b]'+title+'[/b]', font_size='20dp', color=(0,0,0,1), markup=True))
+        my_grid.add_widget(WrappedLabel(text=author, font_size='15dp', color=(0,0,0,1)))
+        my_grid.add_widget(WrappedLabel(text='Rate: '+rate, font_size='15dp', color=(0,0,0,1)))
         if rows== 4:
             updated = manga[5]
-            my_grid.add_widget(WrappedLabel(text='Updated: '+updated, font_size=15, color=(0,0,0,1)))
+            my_grid.add_widget(WrappedLabel(text='Updated: '+updated, font_size='15dp', color=(0,0,0,1)))
         self.ids[id_window].ids[id_grid].add_widget(my_grid)
 
     def show_bubble_addview(self, link, img_source, manga, *args):
@@ -280,20 +281,33 @@ class Phone(FloatLayout):
 
     def search_add_manga(self, manga, *args):
         self.ids['search_window'].remove_widget(self.bubb_addview)
-        if not manga_list.check_manga(manga[0]):
-            manga_list.add_manga(*manga[:5])
+        if not self.app.phone.manga_list.check_manga(manga[0]):
+            self.app.phone.manga_list.add_manga(*manga[:5])
             self.ids['storage_window'].ids['storage_grid'].clear_widgets()
             self.ids['storage_window'].callback()
 
     def storage_delete_manga(self, manga, *args):
         self.ids['storage_window'].remove_widget(self.bubb_viewdelete)
-        if manga_list.check_manga(manga[0]):
+        if self.app.phone.manga_list.check_manga(manga[0]):
             try:
-                manga_list.del_manga(manga[0])
+                self.app.phone.manga_list.del_manga(manga[0])
             except:
                 print('No file')
             self.ids['storage_window'].ids['storage_grid'].clear_widgets()
             self.ids['storage_window'].callback()
+
+    def check_servers(self):
+        """Method use to check the server in the settings"""
+        server = self.app.config.get('basicsettings', 'Servers') # Get the value of config Servers option
+        if server == 'Manganelo':
+            self.imagemanga = os.path.join('imagemanga', 'manganelo')
+            self.manga_list = database.TextFile('manganelo', self.imagemanga)
+            self.manga_scrap = scrapper.ManganeloScrap()
+        elif server == 'Mangaowl':
+            self.imagemanga = os.path.join('imagemanga', 'mangaowl')
+            self.manga_list = database.TextFile('mangaowl', self.imagemanga)
+            self.manga_scrap = scrapper.MangaowlScrap()
+        self.ids.storage_window.callback() # To update storage screen
 
 
 class MyApp(App):
@@ -301,9 +315,25 @@ class MyApp(App):
         self.title = "Manga Updates By Israel Quimson"
         self.phone = Phone()
         self.init_check_folder()
+        self.use_kivy_settings = False # Disable kivy default settings
+        self.phone.check_servers()
         return self.phone
 
+    def build_config(self, config):
+        """Method to define default values in Settings"""
+        config.setdefaults('basicsettings', {'Servers': 'Manganelo'})
+
+    def build_settings(self, settings):
+        """Method to add Panel in the Settings using import file as data"""
+        settings.add_json_panel('Settings', self.config, data=settings_json)
+
+    def on_config_change(self, config, section, key, value):
+        """Method on change config value in the Settings"""
+        if key == 'Servers':
+            self.phone.check_servers()
+
     def init_check_folder(self):
+        """Method to check if the folder exist and create it if not"""
         if not os.path.exists('imagetemp'):
             os.mkdir('imagetemp')
         if not os.path.exists(os.path.join('imagemanga', 'manganelo')):
@@ -312,7 +342,10 @@ class MyApp(App):
             os.makedirs(os.path.join('imagemanga', 'mangaowl'))
 
     def on_pause(self):
-        return True
+        return True # If True the App will not close when pause
+
+    def on_stop(self):
+        self.root.stop.set() # Set a stop signal for secondary python threads
 
 
 

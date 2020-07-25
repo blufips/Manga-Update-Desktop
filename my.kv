@@ -19,9 +19,6 @@
             StorageWindow:
                 name: 'storage'
                 id: storage_window
-            SettingsWindow:
-                name: 'settings'
-                id: settings_window
             DisplayMangaWindow:
                 name: 'displaymanga'
                 id: display_manga
@@ -56,8 +53,7 @@
                 on_release: root.ids.storage_window.track_on()
             Button:
                 text: 'SETTINGS'
-                on_press: root.ids._screen_manager.current = 'settings'
-                on_release: root.ids.settings_window.track_on()
+                on_release: app.open_settings()
 
 <add_view>:
     size_hint: 0.4, 0.2
@@ -85,16 +81,42 @@
     size_hint_y: 0.8
     pos_hint: {'center_y':0.5}
 
-<FloatLayout>:
+
+<-TreeViewNode>:
     canvas.before:
         Color:
-            rgba: 228/255.0, 241.0/255.0, 254.0/255.0, 1
+            rgba: 0, 0, 0, 1
         Rectangle:
-            size: self.size
-            pos: self.pos
+            pos: [self.parent.x, self.y] if self.parent else [0, 0]
+            size: [self.parent.width, self.height] if self.parent else [1, 1]
+        Color:
+            rgba: 1, 1, 1, int(not self.is_leaf)
+        Rectangle:
+            source: 'atlas://data/images/defaulttheme/tree_%s' % ('opened' if self.is_open else 'closed')
+            size: self.height / 2.0, self.height / 2.0
+            pos: self.x - dp(20), self.center_y - dp(8)
+    canvas.after:
+        Color:
+            rgba: .5, .5, .5, .2
+        Line:
+            points: [self.parent.x, self.y, self.parent.right, self.y] if self.parent else []
+
+# <FloatLayout>
+#     canvas.before:
+#         Color:
+#             rgba: 228/255, 241/255, 254/255, 1
+#         Rectangle:
+#             size: self.size
+#             pos: self.pos
 
 <HomeWindow>:
     FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 228/255, 241/255, 254/255, 1
+            Rectangle:
+                size: self.size
+                pos: self.pos
         Button:
             text: "Check Updates"
             font_size: 0.12*self.width if self.width*0.12 < self.height else self.height*0.7
@@ -115,6 +137,12 @@
 
 <SearchWindow>:
     FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 228/255, 241/255, 254/255, 1
+            Rectangle:
+                size: self.size
+                pos: self.pos
         TextInput:
             id: search_input
             font_size: self.height - self.height*0.5
@@ -138,6 +166,12 @@
 
 <StorageWindow>:
     FloatLayout
+        canvas.before:
+            Color:
+                rgba: 228/255, 241/255, 254/255, 1
+            Rectangle:
+                size: self.size
+                pos: self.pos
         canvas:
             Color:
                 rgba: 0, 0, 0, 1
@@ -163,6 +197,12 @@
 
 <DisplayMangaWindow>:
     FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 228/255, 241/255, 254/255, 1
+            Rectangle:
+                size: self.size
+                pos: self.pos
         ScrollView:
             size_hint: 0.9, 0.96
             pos_hint: {'center_x': 0.5,'top': 0.98}
