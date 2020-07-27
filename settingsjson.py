@@ -5,7 +5,7 @@ settings_json = json.dumps([
      'title': 'Select a Server',
      'section': 'basicsettings',
      'key': 'Servers',
-     'options': ['Manganelo', 'Mangaowl']}])
+     'options': ['Manganelo']}])
 
 if __name__ == '__main__':
     print(settings_json)

@@ -54,10 +54,12 @@ class WrappedLabel(Label):
 
 
 class add_view(Bubble):
+    """Class for popup bubble in the search screen that add manga in storage or view the manga and switch to displaymanga screen"""
     pass
 
 
 class view_delete(Bubble):
+    """Class for popup bubble in the storage screen that delete the manga or view the manga and switch to displaymanga screen"""
     pass
 
 
@@ -73,7 +75,7 @@ class PopupLoading(Popup):
         show_layout = FloatLayout()
         loading_path = os.path.join('icon', 'loading.zip')
         loading_label = Label(text='Please Wait\nGetting your Favorite\nManga', text_size=(Window.width*0.5,None), size_hint=(1,0.2), pos_hint={'x':0, 'top':0.7}, halign='center')
-        loading_img = Image(source=loading_path, size_hint=(0.4,0.4), pos_hint={'center_x': 0.5, 'top':0.5})
+        loading_img = Image(source=loading_path, size_hint=(0.4,0.4), pos_hint={'center_x': 0.5, 'top':0.5}) # Loading Animation
         show_layout.add_widget(loading_label)
         show_layout.add_widget(loading_img)
         self.title = 'Loading Screen'
@@ -111,18 +113,21 @@ class SearchWindow(Screen):
     def __init__(self, **kwargs):
         super(SearchWindow, self).__init__(**kwargs)
         self.app = App.get_running_app()
+        self.my_popup = PopupLoading()
 
     def search(self):
         """Method to search Manga in search screen"""
         self.ids.search_grid.clear_widgets()
         self.search_input = self.ids.search_input.text
         threading.Thread(target=self.manga_thread).start()
+        self.my_popup.open()
 
     def manga_thread(self):
         """Method for threading"""
         self.list_manga = self.app.phone.manga_scrap.search(self.search_input)
         for manga in self.list_manga:
             self.app.phone.show_manga_list('search_window', 'search_grid', manga, 'imagetemp', rows=4)
+        self.my_popup.dismiss()
 
     def track_on(self, *args):
         """Method to add search screen to screen_track"""
@@ -151,17 +156,30 @@ class DisplayMangaWindow(Screen):
     def __init__(self, **kwargs):
         super(DisplayMangaWindow, self).__init__(**kwargs)
         self.app = App.get_running_app()
+        self.my_popup = PopupLoading()
 
-    def manga_view(self, link, img_source):
+    def on_enter_screen(self, link, img_source):
+        """Method to call when entering DisplayMangaWindow"""
+        self.link = link
+        self.img_source = img_source
+        threading.Thread(target=self.manga_thread).start()
+        self.my_popup.open()
+
+    def manga_thread(self):
+        self.my_manga = self.app.phone.manga_scrap.chapters(self.link)
+        self.manga_view()
+        self.my_popup.dismiss()
+
+    def manga_view(self):
+        """Method to display list of manga chapters"""
         self.ids['display_grid'].clear_widgets()
         self.ids['display_box'].clear_widgets()
-        self.my_manga = self.app.phone.manga_scrap.chapters(link)
         title = self.my_manga[0][:25]
         author = self.my_manga[3]
         rate = self.my_manga[4]
         updated = self.my_manga[5]
         chapter_list = self.my_manga[6]
-        my_img = Image(source=img_source, size_hint_y=None, allow_stretch=True, keep_ratio=True, height=Window.height*0.3)
+        my_img = Image(source=self.img_source, size_hint_y=None, allow_stretch=True, keep_ratio=True, height=Window.height*0.3)
         self.ids['display_grid'].add_widget(my_img)
         my_grid1 = GridLayout(cols=1)
         my_grid1.add_widget(WrappedLabel(text='[b]'+title+'[/b]', font_size='20dp', color=(0,0,0,1), markup=True))
@@ -276,7 +294,7 @@ class Phone(FloatLayout):
         elif id == 'storage_window':
             self.ids['storage_window'].remove_widget(self.bubb_viewdelete)
         self.ids['_screen_manager'].current = 'displaymanga'
-        self.ids['display_manga'].manga_view(link, img_source)
+        self.ids['display_manga'].on_enter_screen(link, img_source)
         screen_track.add_track('displaymanga')
 
     def search_add_manga(self, manga, *args):
@@ -303,10 +321,10 @@ class Phone(FloatLayout):
             self.imagemanga = os.path.join('imagemanga', 'manganelo')
             self.manga_list = database.TextFile('manganelo', self.imagemanga)
             self.manga_scrap = scrapper.ManganeloScrap()
-        elif server == 'Mangaowl':
-            self.imagemanga = os.path.join('imagemanga', 'mangaowl')
-            self.manga_list = database.TextFile('mangaowl', self.imagemanga)
-            self.manga_scrap = scrapper.MangaowlScrap()
+        # elif server == 'Mangaowl':
+        #     self.imagemanga = os.path.join('imagemanga', 'mangaowl')
+        #     self.manga_list = database.TextFile('mangaowl', self.imagemanga)
+        #     self.manga_scrap = scrapper.MangaowlScrap()
         self.ids.storage_window.callback() # To update storage screen
 
 
