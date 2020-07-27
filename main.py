@@ -176,7 +176,6 @@ class DisplayMangaWindow(Screen):
     def manga_view(self):
         """Method to display list of manga chapters"""
         self.ids['display_grid'].clear_widgets()
-        self.ids['display_box'].clear_widgets()
         title = self.my_manga[0][:25]
         author = self.my_manga[3]
         rate = self.my_manga[4]
@@ -190,6 +189,7 @@ class DisplayMangaWindow(Screen):
         my_grid1.add_widget(WrappedLabel(text='Rate: '+rate, font_size='15dp', color=(0,0,0,1)))
         my_grid1.add_widget(WrappedLabel(text='Updated: '+updated, font_size='15dp', color=(0,0,0,1)))
         self.ids['display_grid'].add_widget(my_grid1)
+        recycle_list = list()
         for chapters in chapter_list:
             chapter = chapters[0].strip()
             chapter_edit = chapter[:20]
@@ -199,9 +199,9 @@ class DisplayMangaWindow(Screen):
                 text = chapter_edit + '...' + ' '*10 + date
             else:
                 text = chapter_edit + ' '*(30-len(chapter_edit)) + ' '*10 + date
-            my_button = Button(text=text, size_hint_y=None, height=Window.height*0.1)
-            my_button.bind(on_release=partial(self.open_browser, link))
-            self.ids['display_box'].add_widget(my_button)
+            recycle_list.append([text, link])
+        self.ids['display_recycle'].data = [{'text': row[0], 'on_release': partial(self.open_browser, row[1])} for row in recycle_list]
+
 
     def open_browser(self, link, *args):
         """Method when call it will open the default browser"""
