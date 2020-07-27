@@ -110,6 +110,7 @@ class HomeWindow(Screen):
 
 
 class SearchWindow(Screen):
+    """Class for Search screen it has text input and ImageButton to search manga"""
     def __init__(self, **kwargs):
         super(SearchWindow, self).__init__(**kwargs)
         self.app = App.get_running_app()
@@ -135,6 +136,7 @@ class SearchWindow(Screen):
 
 
 class StorageWindow(Screen):
+    """Class for Storage screen to display all favorite manga you can view and delete it"""
     def __init__(self, **kwargs):
         super(StorageWindow, self).__init__(**kwargs)
         self.app = App.get_running_app()
@@ -153,6 +155,7 @@ class StorageWindow(Screen):
 
 
 class DisplayMangaWindow(Screen):
+    """Class for DisplayManga screen it will display list of manga chapters"""
     def __init__(self, **kwargs):
         super(DisplayMangaWindow, self).__init__(**kwargs)
         self.app = App.get_running_app()
@@ -201,11 +204,12 @@ class DisplayMangaWindow(Screen):
             self.ids['display_box'].add_widget(my_button)
 
     def open_browser(self, link, *args):
+        """Method when call it will open the default browser"""
         webbrowser.open(link)
 
 
-
 class WindowManager(ScreenManager):
+    """Class of ScreenManager to manage all of the screens"""
     def __init__(self, **kwargs):
         super(WindowManager, self).__init__(**kwargs)
         Window.bind(on_keyboard=self.back_click) # Use to bind keyboard
@@ -214,20 +218,21 @@ class WindowManager(ScreenManager):
         """Method to bind esc or back button if return False the program will exit"""
         if key == 27:
             return self.go_back()
-        return False
+        return False # Return False to close the App
 
     def go_back(self):
         """Method to check the previous screen using screen_track"""
         if screen_track.list_of_prev_screen:
-            screen_track.list_of_prev_screen.pop()
+            screen_track.list_of_prev_screen.pop() # Remove the last added screen_track
             if screen_track.list_of_prev_screen: # Check if screen_track is not empty
-                self.current = screen_track.list_of_prev_screen[-1]
-                return True
+                self.current = screen_track.list_of_prev_screen[-1] # Change the screen into privious visit screen
+                return True # Return True to not close the App
         return False
+
 
 class Phone(FloatLayout):
 
-    stop = threading.Event()
+    stop = threading.Event() # Properties to stop all the thrading
 
     def __init__(self, **kwargs):
         super(Phone, self).__init__(**kwargs)
@@ -262,6 +267,7 @@ class Phone(FloatLayout):
         self.ids[id_window].ids[id_grid].add_widget(my_grid)
 
     def show_bubble_addview(self, link, img_source, manga, *args):
+        """Method to show popup bubble of addview in the screen of SearchWindow it can view and add the selected manga"""
         self.bubb_addview = add_view()
         self.bubb_addview.x = self.on_touch_pos_x
         self.bubb_addview.y = self.on_touch_pos_y - self.bubb_addview.height*1.1
@@ -270,6 +276,7 @@ class Phone(FloatLayout):
         self.bubb_addview.ids['add_search'].bind(on_release=partial(self.search_add_manga, manga))
 
     def show_bubble_viewdelete(self, link, img_source, manga, *args):
+        """Method to show popup bubble of view_delete in the StorageWindow it can view and delete the selected manga"""
         self.bubb_viewdelete = view_delete()
         self.bubb_viewdelete.x = self.on_touch_pos_x
         self.bubb_viewdelete.y = self.on_touch_pos_y - self.bubb_viewdelete.height*1.1
@@ -278,17 +285,19 @@ class Phone(FloatLayout):
         self.bubb_viewdelete.ids['delete_storage'].bind(on_release=partial(self.storage_delete_manga, manga))
 
     def on_touch_down(self, touch):
+        """Method to remove the popup bubble"""
         super().on_touch_down(touch)
-        if self.bubb_addview != None:
+        if self.bubb_addview != None: # Check for addview bubble
             if not Widget(pos=(self.bubb_addview.x, self.bubb_addview.y+self.bubb_addview.height*0.55), size=(self.bubb_addview.width, self.bubb_addview.height)).collide_point(*touch.pos):
                 self.ids['search_window'].remove_widget(self.bubb_addview)
-        if self.bubb_viewdelete != None:
+        if self.bubb_viewdelete != None: # Check for viewdelete ubble
             if not Widget(pos=(self.bubb_viewdelete.x, self.bubb_viewdelete.y+self.bubb_viewdelete.height*0.55), size=(self.bubb_viewdelete.width, self.bubb_viewdelete.height)).collide_point(*touch.pos):
                 self.ids['storage_window'].remove_widget(self.bubb_viewdelete)
         self.on_touch_pos_x = touch.x
         self.on_touch_pos_y = touch.y
 
     def switch_display(self, link, img_source, id, *args):
+        """Method when call it will switch the screen into displaymanga on youre seleted manga"""
         if id == 'search_window':
             self.ids['search_window'].remove_widget(self.bubb_addview)
         elif id == 'storage_window':
@@ -298,6 +307,7 @@ class Phone(FloatLayout):
         screen_track.add_track('displaymanga')
 
     def search_add_manga(self, manga, *args):
+        """Method when call it will add the selected manga and update the StorageWindow"""
         self.ids['search_window'].remove_widget(self.bubb_addview)
         if not self.app.phone.manga_list.check_manga(manga[0]):
             self.app.phone.manga_list.add_manga(*manga[:5])
@@ -305,6 +315,7 @@ class Phone(FloatLayout):
             self.ids['storage_window'].callback()
 
     def storage_delete_manga(self, manga, *args):
+        """Method when call it will delete the selected manga and update the StorageWindow """
         self.ids['storage_window'].remove_widget(self.bubb_viewdelete)
         if self.app.phone.manga_list.check_manga(manga[0]):
             try:
@@ -364,8 +375,6 @@ class MyApp(App):
 
     def on_stop(self):
         self.root.stop.set() # Set a stop signal for secondary python threads
-
-
 
 if __name__ == '__main__':
     MyApp().run()
