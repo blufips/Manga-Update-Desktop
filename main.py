@@ -174,7 +174,7 @@ class DisplayMangaWindow(Screen):
         self.my_popup.dismiss()
 
     def manga_view(self):
-        """Method to display list of manga chapters"""
+        """Method to display list of manga chapters by using recycleview"""
         self.ids['display_grid'].clear_widgets()
         title = self.my_manga[0][:25]
         author = self.my_manga[3]
@@ -199,7 +199,7 @@ class DisplayMangaWindow(Screen):
                 text = chapter_edit + '...' + ' '*10 + date
             else:
                 text = chapter_edit + ' '*(30-len(chapter_edit)) + ' '*10 + date
-            recycle_list.append([text, link])
+            recycle_list.append([text, link]) # Create list of data for recycleview
         self.ids['display_recycle'].data = [{'text': row[0], 'on_release': partial(self.open_browser, row[1])} for row in recycle_list]
 
 
