@@ -181,7 +181,7 @@ class DisplayMangaWindow(Screen):
         rate = self.my_manga[4]
         updated = self.my_manga[5]
         chapter_list = self.my_manga[6]
-        my_img = Image(source=self.img_source, size_hint_y=None, allow_stretch=True, keep_ratio=True, height=Window.height*0.3)
+        my_img = AsyncImage(source=self.img_source, size_hint_y=None, allow_stretch=True, keep_ratio=True, height=Window.height*0.3)
         self.ids['display_grid'].add_widget(my_img)
         my_grid1 = GridLayout(cols=1)
         my_grid1.add_widget(WrappedLabel(text='[b]'+title+'[/b]', font_size='20dp', color=(0,0,0,1), markup=True))
