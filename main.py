@@ -332,10 +332,14 @@ class Phone(FloatLayout):
             self.imagemanga = os.path.join('imagemanga', 'manganelo')
             self.manga_list = database.TextFile('manganelo', self.imagemanga)
             self.manga_scrap = scrapper.ManganeloScrap()
-        # elif server == 'Mangaowl':
-        #     self.imagemanga = os.path.join('imagemanga', 'mangaowl')
-        #     self.manga_list = database.TextFile('mangaowl', self.imagemanga)
-        #     self.manga_scrap = scrapper.MangaowlScrap()
+            self.ids['home_window'].ids['home_grid'].clear_widgets()
+            self.ids['search_window'].ids['search_grid'].clear_widgets()
+        elif server == 'Mangareader':
+            self.imagemanga = os.path.join('imagemanga', 'mangareader')
+            self.manga_list = database.TextFile('mangareader', self.imagemanga)
+            self.manga_scrap = scrapper.MangareaderScrap()
+            self.ids['home_window'].ids['home_grid'].clear_widgets()
+            self.ids['search_window'].ids['search_grid'].clear_widgets()
         self.ids.storage_window.callback() # To update storage screen
 
 
@@ -367,8 +371,8 @@ class MyApp(App):
             os.mkdir('imagetemp')
         if not os.path.exists(os.path.join('imagemanga', 'manganelo')):
             os.makedirs(os.path.join('imagemanga', 'manganelo'))
-        if not os.path.exists(os.path.join('imagemanga', 'mangaowl')):
-            os.makedirs(os.path.join('imagemanga', 'mangaowl'))
+        if not os.path.exists(os.path.join('imagemanga', 'mangareader')):
+            os.makedirs(os.path.join('imagemanga', 'mangareader'))
 
     def on_pause(self):
         return True # If True the App will not close when pause
