@@ -28,6 +28,8 @@ class UserAgentAddImage:
         user_agent = self.user_agents()
         headers = {'User-Agent': user_agent}
         response = requests.get(url, headers=headers)
+        if len(response.content) < 500:
+            response = requests.get('http://static.mangahere.cc/v201906282/mangahere/images/nopicture.jpg', headers=headers)
         if temp:
             imgpath = os.path.join('imagetemp', name + '.jpg')
         else:
@@ -38,11 +40,21 @@ class UserAgentAddImage:
         except:
             pass
 
+    def check_filename_func(self, name):
+        """Method to check the file name if has invalid special character
+           It will remove the invalid special character and return the new file name"""
+        invalid_chars = set('<>:"/\\|?*')
+        new_name = ''
+        for c in name:
+            if c not in invalid_chars:
+                new_name += c
+        return new_name
+
 class ManganeloScrap(UserAgentAddImage):
     """This class use to scrap Manganelo website"""
 
     def search(self, manga):
-        """This method search for manga in mangelo website and return a list of manga title, link, img, author and rating.
+        """This method search for manga in mangelo website and return a generator of manga title, link, img, author and rating.
         It store all the search img into the imagetemp folded then delete it before search again"""
         image_temp_list = [f for f in os.listdir('imagetemp')]
         for f in image_temp_list:
@@ -59,28 +71,13 @@ class ManganeloScrap(UserAgentAddImage):
             title = manga.get('title')
             link = manga.get('href')
             img_link = story_item.find('img', {'class': 'img-loading'}).get('src')
-            self.add_image_func(title, img_link, temp=True)
-            img = title + '.jpg'
+            img_title = self.check_filename_func(title)
+            self.add_image_func(img_title, img_link, temp=True)
+            img = img_title + '.jpg'
             author = story_item.find('span', {'class': 'text-nowrap item-author'}).text
             updated = story_item.find('span', {'class': 'text-nowrap item-time'}).text[10:21]
             rate = story_item.find('em', {'class': 'item-rate'}).text
             yield [title, link, img, author, rate, updated]
-
-    def chapter_view(self, link):
-        """This method accept link as argument and return a generator of manga image"""
-        image_temp_list = [f for f in os.listdir('chaptertemp')]
-        for f in image_temp_list:
-            os.remove(os.path.join('chaptertemp', f))
-        url = link
-        user_agent = self.user_agents()
-        headers = {'User-Agent': user_agent}
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, 'lxml')
-        chapter_container = soup.find('div', {'class': 'container-chapter-reader'})
-        link_list = list()
-        for img in chapter_container.find_all('img'):
-            link_list.append(img.get('src'))
-        return link_list
 
     def chapters(self, link):
         """This method accept link as argument and return a dictionary of manga title, chapters link, img, author and rating  """
@@ -132,115 +129,98 @@ class ManganeloScrap(UserAgentAddImage):
         return sorted_list
 
 
-# class MangaowlScrap(UserAgentAddImage):
-#     """This class is use to scrap Funmanga website"""
-#
-#     def search(self, manga):
-#         """This method search for manga in Funmanga website and return a list of manga title, link, img, author and rating
-#         It store all the search img into the imagetemp folded then delete it before search again"""
-#         image_temp_list = [f for f in os.listdir('imagetemp')]
-#         for f in image_temp_list:
-#             os.remove(os.path.join('imagetemp', f))
-#         url = f'https://mangaowl.net/search/{manga}/1'
-#         user_agent = self.user_agents()
-#         headers = {'User-Agents': user_agent}
-#         response = requests.get(url, headers=headers)
-#         soup = BeautifulSoup(response.text, 'lxml')
-#         flexislider_grids = soup.find('div', {'class':'agileinfo_flexislider_grids'})
-#         for comic_view in flexislider_grids.find_all('div', {'class':'col-md-2 w3l-movie-gride-agile comicView'}):
-#             title = comic_view.get('data-title')
-#             link = comic_view.a.get('href')
-#             img_link = comic_view.find('div', {'class':'img-responsive lazy lozad comic_thumbnail div-hover-zoom'}).get('data-background-image')
-#             self.add_image_func(title, img_link, temp=True)
-#             img = title + '.jpg'
-#             author = ' '
-#             updated = comic_view.find('span', {'class':'tray-item'}).text.strip()
-#             rate = comic_view.find('ul', {'class':'w3l-ratings'}).li.font.text
-#             yield [title, link, img, author, rate, updated]
-#
-#     def chapter_view(self, link):
-#         """This method accept link as argument and return a list of manga image"""
-#         image_temp_list = [f for f in os.listdir('chaptertemp')]
-#         for f in image_temp_list:
-#             os.remove(os.path.join('chaptertemp', f))
-#         url = link
-#         user_agent = self.user_agents()
-#         headers = {'User-Agent': user_agent}
-#         response = requests.get(url, headers=headers)
-#         soup = BeautifulSoup(response.text, 'lxml')
-#         link_list = list()
-#         for img in soup.find_all('img', {'class':'owl-lazy'}):
-#             img_link = img.get('data-src')
-#             link_list.append(img_link)
-#         return link_list
-#
-#
-#     def chapters(self, link):
-#         """This method accept link as argument and return a dictionary of manga title, chpaters link, img , author and rating"""
-#         url = link
-#         user_agent = self.user_agents()
-#         headers = {'User-Agent': user_agent}
-#         response = requests.get(url, headers=headers)
-#         soup = BeautifulSoup(response.text, 'lxml')
-#         right_grids = soup.find('div', {'class':'col-xs-12 col-md-8 single-right-grid-right'})
-#         title = right_grids.h2.text.strip()
-#         img = title + '.jpg'
-#         author = right_grids.find('a', {'class':'author_link'}).text.strip()
-#         try:
-#             rate = right_grids.find('font', {'class':'rating_scored'}).text
-#         except:
-#             rate = ' '
-#         table_chapter_list = soup.find('div', {'class':'table table-chapter-list'})
-#         chapter_list = list()
-#         for list_group_item in table_chapter_list.find_all('li',{'class':'list-group-item chapter_list'}):
-#             link = list_group_item.find('a', {'class':'chapter-url'}).get('href')
-#             chapter_title = list_group_item.find('label', {'class':'chapter-title'}).text
-#             chapter_title = ' '.join(chapter_title.split())
-#             date = list_group_item.small.text
-#             chapter_list.append([chapter_title, link, date])
-#         updated = chapter_list[0][2]
-#         manga_list = [title, url, img, author, rate, updated, chapter_list]
-#         return manga_list
-#
-#     def date_format(self, date_str):
-#         """This method change the format of date in manganelo example from  Jun 19,2020 into 20200619"""
-#         date_time_obj = datetime.datetime.strptime(date_str, '%m/%d/%Y')
-#         datestamps = int(''.join(str(date_time_obj.date()).split('-')))
-#         return datestamps
-#
-#     def update(self):
-#         """Method to update all the mangalist for manganelo website"""
-#         manga_list = list()
-#         with open('mangaowl.txt', 'r') as file:
-#             for line in file.readlines():
-#                 url = line.split(',,')[1].strip()
-#                 manga = self.chapters(url)
-#                 date_formated = self.date_format(manga[5])
-#                 manga_list.append([manga, date_formated])
-#                 random_time = round(random.uniform(0.5, 1.5), 2)
-#                 time.sleep(random_time)
-#             sorted_list = list()
-#             for manga in sorted(manga_list, key=lambda date: date[1], reverse=True):
-#                 sorted_list.append(manga[0])
-#         return sorted_list
-#
-#
+class MangareaderScrap(UserAgentAddImage):
+    """This class use to scrap Mangareader website"""
+
+    def search(self, manga):
+        """This method search for manga in manghere website and return a generator of manga title, link, img, author and rating.
+        It store all the search img into the imagetemp folded then delete it before search again"""
+        image_temp_list = [f for f in os.listdir('imagetemp')]
+        for f in image_temp_list:
+            os.remove(os.path.join('imagetemp', f))
+        manga = '+'.join(manga.split())
+        url = "https://www.mangareader.net/search/?w=" + manga + "&rd=0&status=0&order=0&genre=0000000000000000000000000000000000000&p=0"
+        user_agent = self.user_agents()
+        headers = {'User-Agent': user_agent}
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, 'lxml')
+        id_ares = soup.find('div', {'class', 'd52'})
+        for d54 in id_ares.find_all('div', {'class', 'd54'}):
+            title = d54.find('div', {'class', 'd57'}).a.text
+            link = "https://www.mangareader.net" + d54.find('div', {'class', 'd57'}).a.get('href')
+            img_link = "https:" + d54.find('div', {'class', 'd56'}).get('data-src')
+            img_title = self.check_filename_func(title)
+            self.add_image_func(img_title, img_link, temp=True)
+            img = img_title + '.jpg'
+            author = ''
+            updated = d54.find('div', {'class', 'd58'}).text
+            rate = ''
+            yield [title, link, img, author, rate, updated]
+
+    def chapters(self, link):
+        """This method accept link as argument and return a dictionary of manga title, chapters link, img, author and rating  """
+        url = link
+        user_agent = self.user_agents()
+        headers = {'User-Agent': user_agent}
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, 'lxml')
+        d37_class = soup.find('div', {'class': 'd37'})
+        title = d37_class.find('table', {'class': 'd41'}).find('span', {'class': 'name'}).text
+        img_title = self.check_filename_func(title)
+        img = img_title + '.jpg'
+        author = d37_class.find('td', text="Author :").find_next_sibling('td').text
+        rate = ''
+        # updated = d37_class.find('ul', {'class': 'd44'}).li.a.text
+        d48_class = soup.find('table', {'class': 'd48'})
+        first_tr = True
+        chapter_list = list()
+        for tr in d48_class.find_all('tr'):
+            if first_tr:
+                first_tr = False
+            else:
+                link = "https://www.mangareader.net" + tr.td.a.get('href')
+                chapter_title = tr.td.a.text
+                date = tr.td.find_next_sibling('td').text
+                chapter_list.append([chapter_title, link, date])
+        chapter_list = chapter_list[::-1]
+        updated = chapter_list[0][-1]
+        manga_list = [title, url, img, author, rate, updated, chapter_list]
+        return manga_list
+
+    def date_format(self, date_str):
+        """This method change the format of date in mangareader example from  07/19/2020 into 20200619"""
+        date_time_obj = datetime.datetime.strptime(date_str, '%m/%d/%Y')
+        datestamps = int(''.join(str(date_time_obj.date()).split('-')))
+        return datestamps
+
+    def update(self):
+        """Method to update all the mangalist for mangareader website"""
+        manga_list = list()
+        with open('mangareader.txt', 'r') as file:
+            for line in file.readlines():
+                url = line.split(',,')[1].strip()
+                manga = self.chapters(url)
+                date_formated = self.date_format(manga[5])
+                manga_list.append([manga, date_formated])
+                random_time = round(random.uniform(0.5, 1.5), 2)
+                time.sleep(random_time)
+            sorted_list = list()
+            for manga in sorted(manga_list, key=lambda date: date[1], reverse=True):
+                sorted_list.append(manga[0])
+        return sorted_list
 
 if __name__ == '__main__':
     manga = ManganeloScrap()
     # for i in manga.search('one piece'):
     #     print(i)
-    # print(manga.user_agents())
-    # manga.test_request()
-    # print(manga.manganelo_chapters('https://manganelo.com/manga/ilsi12001567132882'))
-    # for _ in manga.chapters('https://manganelo.com/manga/ilsi12001567132882'):
-    #     print(_)
+    for _ in manga.chapters('https://manganelo.com/manga/ilsi12001567132882'):
+        print(_)
     # print(manga.update())
     # manga.add_image('berserk', 'http://i998.imggur.net/one-piece/983/one-piece-13676137.jpg', temp=True)
     # manga.manganelo_chapter_view('https://manganelo.com/chapter/ilsi12001567132882/chapter_360')
 
-    # manga = MangaowlScrap()
+    manga = MangareaderScrap()
     # for i in manga.search('berserk'):
     #     print(i)
-    # manga.chapters('https://mangaowl.net/single/51/berserk')
-    # print(manga.update())
+    for _ in manga.chapters('https://www.mangareader.net/berserk'):
+        print(_)

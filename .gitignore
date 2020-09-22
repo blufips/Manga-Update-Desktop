@@ -1,6 +1,7 @@
 __pycache__
 imagemanga/
 imagetemp/
-manganelo.txt 
+manganelo.txt
+mangareader.txt
 Pipfile
 Pipfile.lock
