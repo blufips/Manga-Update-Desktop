@@ -79,25 +79,6 @@ class ManganeloScrap(UserAgentAddImage):
             rate = story_item.find('em', {'class': 'item-rate'}).text
             yield [title, link, img, author, rate, updated]
 
-<<<<<<< HEAD
-    # def chapter_view(self, link):
-    #     """This method accept link as argument and return a generator of manga image"""
-    #     image_temp_list = [f for f in os.listdir('chaptertemp')]
-    #     for f in image_temp_list:
-    #         os.remove(os.path.join('chaptertemp', f))
-    #     url = link
-    #     user_agent = self.user_agents()
-    #     headers = {'User-Agent': user_agent}
-    #     response = requests.get(url, headers=headers)
-    #     soup = BeautifulSoup(response.text, 'lxml')
-    #     chapter_container = soup.find('div', {'class': 'container-chapter-reader'})
-    #     link_list = list()
-    #     for img in chapter_container.find_all('img'):
-    #         link_list.append(img.get('src'))
-    #     return link_list
-
-=======
->>>>>>> working
     def chapters(self, link):
         """This method accept link as argument and return a dictionary of manga title, chapters link, img, author and rating  """
         url = link
