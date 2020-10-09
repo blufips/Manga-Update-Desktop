@@ -66,18 +66,21 @@ class ManganeloScrap(UserAgentAddImage):
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.text, 'lxml')
         search_panel = soup.find('div', {'class': 'panel-search-story'})
-        for story_item in search_panel.find_all('div',{'class': 'search-story-item'}):
-            manga = story_item.find('a', {'class': 'item-img'})
-            title = manga.get('title')
-            link = manga.get('href')
-            img_link = story_item.find('img', {'class': 'img-loading'}).get('src')
-            img_title = self.check_filename_func(title)
-            self.add_image_func(img_title, img_link, temp=True)
-            img = img_title + '.jpg'
-            author = story_item.find('span', {'class': 'text-nowrap item-author'}).text
-            updated = story_item.find('span', {'class': 'text-nowrap item-time'}).text[10:21]
-            rate = story_item.find('em', {'class': 'item-rate'}).text
-            yield [title, link, img, author, rate, updated]
+        try:
+            for story_item in search_panel.find_all('div',{'class': 'search-story-item'}):
+                manga = story_item.find('a', {'class': 'item-img'})
+                title = manga.get('title')
+                link = manga.get('href')
+                img_link = story_item.find('img', {'class': 'img-loading'}).get('src')
+                img_title = self.check_filename_func(title)
+                self.add_image_func(img_title, img_link, temp=True)
+                img = img_title + '.jpg'
+                author = story_item.find('span', {'class': 'text-nowrap item-author'}).text
+                updated = story_item.find('span', {'class': 'text-nowrap item-time'}).text[10:21]
+                rate = story_item.find('em', {'class': 'item-rate'}).text
+                yield [title, link, img, author, rate, updated]
+        except AttributeError:
+            pass
 
     def chapters(self, link):
         """This method accept link as argument and return a dictionary of manga title, chapters link, img, author and rating  """
