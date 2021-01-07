@@ -1,6 +1,6 @@
 wheel==0.34.2
 beautifulsoup4==4.9.1
-lxml==4.5.1
+lxml==4.6.2
 requests==2.23.0
 docutils==0.16
 Pygments==2.6.1
