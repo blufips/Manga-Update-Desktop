@@ -1,4 +1,8 @@
-MangaUpdate version 0.53
+MangaUpdate version 0.57
+Change requests into cloudscraper to fix the cloudflare blocking the scrapper.py
+Temporary remove other server except Mangahub (It's hard to maintain multiple manga server)
+
+MangaUpdate version 0.56
 
 This version is for Android APP using buildozer to make APK
 
@@ -7,17 +11,28 @@ The main function of this application is to check all the updates of your favori
 You can search your favorite manga in search button
 You can check your favorite manga in storage button
 You can view latest manga and genres
-You can change Manga server in Settings (Currently Manganelo, Mangareader, Toonily and Mangapark Server is available)
+You can change Manga server in Settings (Currently Manganelo and Mangareader Server is available)
 
 To go back to previous screen just click escape from your keyboard
 
-Note: I add random delay (0.1-.5seconds) for each manga to be check update, the reason is for the Manga server not be flooded of requests
+Note: I add random delay (0.3-1seconds) for each manga to be check update, the reason is for the Manga server not be flooded of requests
 
 If you have comments, suggestion or bug report kindly email me at israelquimson49056@yahoo.com
 
 Have fun
 
+
 **********
+version 0.56
+Fix the date_format method in mangahub scrap
+
+version 0.55
+Add server Mangahub(default Server)
+Remove server Manganelo and Toonily
+
+version 0.54
+Temporary change the default server to MangaPark
+
 version 0.53
 Add delete_manga in class MainFunc scrapper.py
 Add storage refresh every check manga_update

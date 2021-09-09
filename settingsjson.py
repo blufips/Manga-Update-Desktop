@@ -5,7 +5,7 @@ settings_json = json.dumps([
      'title': 'Select a Server',
      'section': 'basicsettings',
      'key': 'Servers',
-     'options': ['Manganelo', 'Mangareader', 'Toonily(Adult)', 'Mangapark']},
+     'options': ['Mangahub']},
      {'type': 'bool',
       'title': 'Dark Mode',
       'section': 'basicsettings',

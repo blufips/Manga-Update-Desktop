@@ -468,26 +468,21 @@ class Phone(FloatLayout):
     def check_servers(self):
         """Method use to check the server in the settings"""
         server = self.app.config.get('basicsettings', 'Servers') # Get the value of config Servers option
-        if server == 'Manganelo':
-            self.imagemanga = os.path.join('..', 'imagemanga', 'manganelo')
-            self.manga_list = database.TextFile('manganelo', self.imagemanga)
-            self.manga_scrap = scrapper.ManganeloScrap()
-            self.restore_default()
-        elif server == 'Mangareader':
-            self.imagemanga = os.path.join('..', 'imagemanga', 'mangareader')
-            self.manga_list = database.TextFile('mangareader', self.imagemanga)
-            self.manga_scrap = scrapper.MangareaderScrap()
-            self.restore_default()
-        elif server == 'Toonily(Adult)':
-            self.imagemanga = os.path.join('..', 'imagemanga', 'toonily')
-            self.manga_list = database.TextFile('toonily', self.imagemanga)
-            self.manga_scrap = scrapper.ToonilyScrap()
-            self.restore_default()
-        elif server == "Mangapark":
-            self.imagemanga = os.path.join('..', 'imagemanga', 'mangapark')
-            self.manga_list = database.TextFile('mangapark', self.imagemanga)
-            self.manga_scrap = scrapper.MangaParkScrap()
+        if server == 'Mangahub':
+            self.imagemanga = os.path.join('..', 'imagemanga', 'mangahub')
+            self.manga_list = database.TextFile('mangahub', self.imagemanga)
+            self.manga_scrap = scrapper.MangahubScrap()
             self.restore_default() # To clear widget, go to home screen and show latest release
+        # elif server == 'Mangareader':
+        #     self.imagemanga = os.path.join('..', 'imagemanga', 'mangareader')
+        #     self.manga_list = database.TextFile('mangareader', self.imagemanga)
+        #     self.manga_scrap = scrapper.MangareaderScrap()
+        #     self.restore_default()
+        # elif server == "Mangapark":
+        #     self.imagemanga = os.path.join('..', 'imagemanga', 'mangapark')
+        #     self.manga_list = database.TextFile('mangapark', self.imagemanga)
+        #     self.manga_scrap = scrapper.MangaParkScrap()
+        #     self.restore_default()
     def restore_default(self):
         """Method to restore the default when changing the server"""
         self.ids['home_window'].ids['home_grid'].clear_widgets()
@@ -509,10 +504,13 @@ class Phone(FloatLayout):
 class MyApp(App):
     def __init__(self, **kwargs):
         super(MyApp, self).__init__(**kwargs)
-        app_id = TestIds.APP
+        app_id = 'ca-app-pub-8089433413136772~9573406997'
+        # app_id = TestIds.APP
         self.ads = KivMob(app_id)
-        banner_id = TestIds.BANNER
-        interstitial_id = TestIds.INTERSTITIAL
+        banner_id = 'ca-app-pub-8089433413136772/5023610284'
+        # banner_id = TestIds.BANNER
+        interstitial_id = 'ca-app-pub-8089433413136772/8617959106'
+        # interstitial_id = TestIds.INTERSTITIAL
         self.ads.new_banner(banner_id, top_pos=True)
         self.ads.new_interstitial(interstitial_id)
         self.show_ads()
@@ -551,7 +549,7 @@ class MyApp(App):
         """Method to define default values in Settings"""
         with open('version.txt', 'r') as file:
             version_num = file.read()
-        config.setdefaults('basicsettings', {'Servers': 'Manganelo', 'Version': version_num, 'darkmode': False})
+        config.setdefaults('basicsettings', {'Servers': 'Mangahub', 'Version': version_num, 'darkmode': False})
 
     def build_settings(self, settings):
         """Method to add Panel in the Settings using import file as data"""
@@ -627,14 +625,12 @@ class MyApp(App):
             os.mkdir('imagetemp')
         if not os.path.exists('imagerelease'):
             os.mkdir('imagerelease')
-        if not os.path.exists(os.path.join('..', 'imagemanga', 'manganelo')):
-            os.makedirs(os.path.join('..', 'imagemanga', 'manganelo'))
-        if not os.path.exists(os.path.join('..', 'imagemanga', 'mangareader')):
-            os.makedirs(os.path.join('..', 'imagemanga', 'mangareader'))
-        if not os.path.exists(os.path.join('..', 'imagemanga', 'toonily')):
-            os.makedirs(os.path.join('..', 'imagemanga', 'toonily'))
-        if not os.path.exists(os.path.join('..', 'imagemanga', 'mangapark')):
-            os.makedirs(os.path.join('..', 'imagemanga', 'mangapark'))
+        if not os.path.exists(os.path.join('..', 'imagemanga', 'mangahub')):
+            os.makedirs(os.path.join('..', 'imagemanga', 'mangahub'))
+        # if not os.path.exists(os.path.join('..', 'imagemanga', 'mangareader')):
+        #     os.makedirs(os.path.join('..', 'imagemanga', 'mangareader'))
+        # if not os.path.exists(os.path.join('..', 'imagemanga', 'mangapark')):
+        #     os.makedirs(os.path.join('..', 'imagemanga', 'mangapark'))
 
     def on_pause(self):
         return True # If True the App will not close when pause
