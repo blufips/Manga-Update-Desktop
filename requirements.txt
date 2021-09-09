@@ -3,7 +3,7 @@ beautifulsoup4==4.9.1
 lxml==4.5.1
 cloudscraper==1.2.58
 docutils==0.16
-Pygments==2.6.1
+Pygments==2.7.4
 pypiwin32==223
 kivy-deps.sdl2==0.1.23
 kivy-deps.glew==0.1.12
