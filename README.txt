@@ -1,11 +1,4 @@
-MangaUpdate version 0.57
-Change requests into cloudscraper to fix the cloudflare blocking the scrapper.py
-Temporary remove other server except Mangahub (It's hard to maintain multiple manga server)
-
-MangaUpdate version 0.56
-
-This version is for Android APP using buildozer to make APK
-
+This version is for desktop using python and kivy
 
 The main function of this application is to check all the updates of your favorite manga from latest and then it can re direct the browser to the Manga Server
 You can search your favorite manga in search button
@@ -23,6 +16,10 @@ Have fun
 
 
 **********
+version 0.57
+Change requests into cloudscraper to fix the cloudflare blocking the scrapper.py
+Temporary remove other server except Mangahub (It's hard to maintain multiple manga server)
+
 version 0.56
 Fix the date_format method in mangahub scrap
 
