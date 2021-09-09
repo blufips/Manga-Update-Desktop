@@ -687,29 +687,36 @@ class MangahubScrap(MainFunc):
         #headers = {'User-Agent': user_agent}
         response = scraper.get(url)
         soup = BeautifulSoup(response.text, 'lxml')
-        ul = soup.find('ul', {'class':'_2FkQT'})
-        li = ul.find_all('li', {'class':'iqzwK'})
-        for num in range(10):
+        count = 10
+        ul_all = soup.find_all('ul', {'class':'_2FkQT'})
+        for ul in ul_all:
             try:
-                title = li[num].find('h4', {'class':'media-heading'}).a.text
-                link = li[num].find('h4', {'class':'media-heading'}).a.get('href')
-                img_link = li[num].find('div', {'class':'media-left'}).a.img.get('src')
-                img_link = self.url_name_check(img_link)
-                img_title = self.check_filename_func(title)
-                self.add_image_func(img_title, img_link, path='imagerelease')
-                img = img_title + '.jpg'
-                author = "N/A"
-                rate = "N/A"
-                updated = li[num].find('h4', {'class':'media-heading'}).small.text
-                checked_names = list(map(self.check_name_len, [title, author, rate]))
-                checked_names.insert(1, link)
-                checked_names.insert(2, img)
-                checked_names.append(updated)
-                yield checked_names
-            except GeneratorExit:
-                return
-            except AttributeError:
-                pass
+                li = ul.find_all('li', {'class':'iqzwK'})
+                for num in range(10):
+                    if count > 0:
+                        try:
+                            title = li[num].find('h4', {'class':'media-heading'}).a.text
+                            link = li[num].find('h4', {'class':'media-heading'}).a.get('href')
+                            img_link = li[num].find('div', {'class':'media-left'}).a.img.get('src')
+                            img_link = self.url_name_check(img_link)
+                            img_title = self.check_filename_func(title)
+                            self.add_image_func(img_title, img_link, path='imagerelease')
+                            img = img_title + '.jpg'
+                            author = "N/A"
+                            rate = "N/A"
+                            updated = li[num].find('h4', {'class':'media-heading'}).small.text
+                            checked_names = list(map(self.check_name_len, [title, author, rate]))
+                            checked_names.insert(1, link)
+                            checked_names.insert(2, img)
+                            checked_names.append(updated)
+                            count -= 1
+                            yield checked_names
+                        except GeneratorExit:
+                            return
+                        except AttributeError:
+                            pass
+            except IndexError:
+                print("Next UL")
 
     def genres(self):
         """Method to get all the manga genres and its corresponding link and return a list of it"""
