@@ -504,13 +504,10 @@ class Phone(FloatLayout):
 class MyApp(App):
     def __init__(self, **kwargs):
         super(MyApp, self).__init__(**kwargs)
-        app_id = 'ca-app-pub-8089433413136772~9573406997'
-        # app_id = TestIds.APP
+        app_id = TestIds.APP
         self.ads = KivMob(app_id)
-        banner_id = 'ca-app-pub-8089433413136772/5023610284'
-        # banner_id = TestIds.BANNER
-        interstitial_id = 'ca-app-pub-8089433413136772/8617959106'
-        # interstitial_id = TestIds.INTERSTITIAL
+        banner_id = TestIds.BANNER
+        interstitial_id = TestIds.INTERSTITIAL
         self.ads.new_banner(banner_id, top_pos=True)
         self.ads.new_interstitial(interstitial_id)
         self.show_ads()
