@@ -1,5 +1,6 @@
 __pycache__
 imagemanga/
 imagetemp/
+imagerelease/
 Pipfile
 Pipfile.lock
